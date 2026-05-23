@@ -10,7 +10,8 @@ function limpiarCanvas() {
 
 function dibujarTodo() {
   limpiarCanvas();
-  dibujarTablero();       
+  dibujarTablero();   
+  pintarParte(10,2);    
 }
 
 function dibujarTablero() {
@@ -30,4 +31,13 @@ function dibujarTablero() {
     ctx.lineTo(canvas.width, y);      
     ctx.stroke();
   }
+}
+
+function pintarParte(lineaX, lineaY) {
+  const x = lineaX * TAMANIO_CELDA;
+  const y = lineaY * TAMANIO_CELDA;
+  ctx.fillStyle = "#ff0000";
+  ctx.fillRect(x, y, TAMANIO_CELDA, TAMANIO_CELDA);
+  ctx.strokeStyle = "#000000";
+  ctx.strokeRect(x, y, TAMANIO_CELDA, TAMANIO_CELDA);
 }
