@@ -1,25 +1,33 @@
+const canvas = document.getElementById("canvasJuego");
+const ctx = canvas.getContext("2d");
+const TAMANIO_CELDA = 25; 
 
-    // 1. Capturamos el canvas y su contexto de dibujo
-    const canvas = document.getElementById("canvasJuego");
-    const ctx = canvas.getContext("2d");
+dibujarTodo();
 
+function limpiarCanvas() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
 
-    
+function dibujarTodo() {
+  limpiarCanvas();
+  dibujarTablero();       
+}
 
-    // Primera pintura del juego al cargar la página
-    dibujarTodo();
+function dibujarTablero() {
+  ctx.strokeStyle = "rgba(34, 197, 94, 0.15)"; 
+  ctx.lineWidth = 1;
 
-    // =========================
-    // FUNCIONES DE DIBUJO
-    // =========================
+  for (let x = 0; x <= canvas.width; x += TAMANIO_CELDA) {
+    ctx.beginPath();
+    ctx.moveTo(x, 0);                 
+    ctx.lineTo(x, canvas.height);     
+    ctx.stroke();
+  }
 
-    function limpiarCanvas() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-    }
-
-    function dibujarTodo() {
-      limpiarCanvas();
-    }
-
-
-
+  for (let y = 0; y <= canvas.height; y += TAMANIO_CELDA) {
+    ctx.beginPath();
+    ctx.moveTo(0, y);                 
+    ctx.lineTo(canvas.width, y);      
+    ctx.stroke();
+  }
+}
