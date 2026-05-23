@@ -2,7 +2,7 @@ const canvas = document.getElementById("canvasJuego");
 const ctx = canvas.getContext("2d");
 const TAMANIO_CELDA = 25; 
 
-const serpiente = [
+let serpiente = [
   { x: 10, y: 11 }, 
   { x: 10, y: 10 }, 
   { x: 9, y: 10 }, 
@@ -14,6 +14,9 @@ let bucleJuego = null;
 
 let comida = { x: 0, y: 0 }; 
 let puntaje = 0;             
+let velocidad = 200; 
+let juegoTerminado = false; 
+
 generarNuevaComida();
 dibujarTodo();
 
@@ -77,7 +80,8 @@ function generarNuevaComida() {
 }
 
 function pintarComida() {
-  pintarParte(comida.x, comida.y, "#ef4444"); 
+  ctx.fillStyle = "#ef4444";
+  ctx.fillRect(comida.x * TAMANIO_CELDA, comida.y * TAMANIO_CELDA, TAMANIO_CELDA, TAMANIO_CELDA);
 }
 
 function atrapaComida() {
@@ -88,70 +92,86 @@ function atrapaComida() {
   return false;
 }
 
-function moverDerecha(crecer) {
-  const cabezaActual = serpiente[0];
-  const nuevaCabeza = { x: cabezaActual.x + 1, y: cabezaActual.y };
-  serpiente.unshift(nuevaCabeza);
-  if (!crecer) serpiente.pop();
-  dibujarTodo();
-}
+// Actividad 1: Función para validar si la cabeza sale del tablero
+function verificarColisionBordes(cabeza) {
+  const lineasHorizontales = canvas.width / TAMANIO_CELDA;
+  const lineasVerticales = canvas.height / TAMANIO_CELDA;
 
-function moverIzquierda(crecer) {
-  const cabezaActual = serpiente[0];
-  const nuevaCabeza = { x: cabezaActual.x - 1, y: cabezaActual.y };
-  serpiente.unshift(nuevaCabeza);
-  if (!crecer) serpiente.pop();
-  dibujarTodo();
+  if (
+    cabeza.x < 0 || cabeza.x >= lineasHorizontales || cabeza.y < 0 || cabeza.y >= lineasVerticales
+  ) {
+    return true;
+  }
+  return false;
 }
-
-function moverArriba(crecer) {
-  const cabezaActual = serpiente[0];
-  const nuevaCabeza = { x: cabezaActual.x, y: cabezaActual.y - 1 };
-  serpiente.unshift(nuevaCabeza);
-  if (!crecer) serpiente.pop();
-  dibujarTodo();
-}
-
-function moverAbajo(crecer) {
-  const cabezaActual = serpiente[0];
-  const nuevaCabeza = { x: cabezaActual.x, y: cabezaActual.y + 1 };
-  serpiente.unshift(nuevaCabeza);
-  if (!crecer) serpiente.pop();
-  dibujarTodo();
-}
-
 function cambiarDireccion(nuevaDireccion) {
-  direccionActual = nuevaDireccion;
+  if (juegoTerminado) return;
+
+  if (nuevaDireccion === "arriba" && direccionActual !== "abajo") {
+    direccionActual = "arriba";
+  }else if (nuevaDireccion === "abajo" && direccionActual !== "arriba") {
+    direccionActual = "abajo";
+  }
+  else if (nuevaDireccion === "izquierda" && direccionActual !== "derecha") {
+    direccionActual = "izquierda";
+  }
+  else if (nuevaDireccion === "derecha" && direccionActual !== "izquierda") {
+    direccionActual = "derecha";
+  }
 }
 
 function moverSerpiente() {
+  if (juegoTerminado) return;
+
   console.log("moviendo");
   
+  const cabezaActual = serpiente[0];
+  let nuevaCabeza = { x: cabezaActual.x, y: cabezaActual.y };
+
+  if (direccionActual === "derecha") {
+    nuevaCabeza.x += 1;
+  }else if (direccionActual === "izquierda") {
+    nuevaCabeza.x -= 1;
+  }else if (direccionActual === "arriba") {
+    nuevaCabeza.y -= 1;
+  }else if (direccionActual === "abajo") {
+    nuevaCabeza.y += 1;
+  }
+
+  if (verificarColisionBordes(nuevaCabeza)) {
+    juegoTerminado = true;
+    clearInterval(bucleJuego);
+    bucleJuego = null;
+    document.getElementById("estado").innerText = "PERDISTE";
+    document.getElementById("mensaje").innerText = "GAME OVER";
+    return;
+  }
+  serpiente.unshift(nuevaCabeza);
+
   const incremento = atrapaComida();
   
   if (incremento) {
     puntaje++;
     document.getElementById("puntaje").innerText = puntaje;
-
     generarNuevaComida();
+
+    if (velocidad > 70) { 
+      velocidad -= 10; 
+      clearInterval(bucleJuego);
+      bucleJuego = setInterval(moverSerpiente, velocidad);
+    }
+  } else {
+    serpiente.pop();
   }
 
-  if (direccionActual === "derecha") {
-    moverDerecha(incremento);
-  } else if (direccionActual === "izquierda") {
-    moverIzquierda(incremento);
-  } else if (direccionActual === "arriba") {
-    moverArriba(incremento);
-  } else if (direccionActual === "abajo") {
-    moverAbajo(incremento);
-  }
+  dibujarTodo();
 }
 
 function iniciarJuego() {
-  if (bucleJuego !== null) return; 
+  if (bucleJuego !== null || juegoTerminado) return; 
   document.getElementById("estado").innerText = "Jugando";
   document.getElementById("mensaje").innerText = "Juego en curso";
-  bucleJuego = setInterval(moverSerpiente, 200); 
+  bucleJuego = setInterval(moverSerpiente, velocidad); 
 }
 
 function pausarJuego() {
@@ -166,6 +186,7 @@ function pausarJuego() {
 function reiniciarJuego() {
   pausarJuego();
   
+  juegoTerminado = false;
   serpiente.length = 0;
   serpiente.push(
     { x: 10, y: 11 },
@@ -175,6 +196,8 @@ function reiniciarJuego() {
   );
   
   direccionActual = "derecha";
+  velocidad = 200;
+  
   puntaje = 0;
   document.getElementById("puntaje").innerText = puntaje;
   
