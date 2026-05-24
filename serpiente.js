@@ -92,7 +92,6 @@ function atrapaComida() {
   return false;
 }
 
-// Actividad 1: Función para validar si la cabeza sale del tablero
 function verificarColisionBordes(cabeza) {
   const lineasHorizontales = canvas.width / TAMANIO_CELDA;
   const lineasVerticales = canvas.height / TAMANIO_CELDA;
